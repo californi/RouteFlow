@@ -27,7 +27,7 @@ case "$1" in
     echo "Options: "
     echo "    --pox: run using POX"
     echo "    --nox: run using NOX"
-    echo "    --floodlight: run using FloodLight"
+    echo "    --floodlight: run using Floodlight"
     echo "    --reset: stop running and clear data from previous executions"
     exit
     ;;
