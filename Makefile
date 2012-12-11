@@ -17,7 +17,7 @@ export CPP := g++
 export CFLAGS := -Wall -W
 export AR := ar
 
-all: build lib app nox
+all: build lib app nox floodlight
 
 build:
 	@mkdir -p $(BUILD_DIR);
@@ -63,7 +63,12 @@ nox: lib
 	make -C $(RFC_DIR)/build; \
 	echo "done."
 
-clean: clean-libs clean-apps_obj clean-apps_bin clean-nox
+floodlight: 
+	echo "Building Floodlight with rfproxy..."
+	ant -f floodlight/build.xml dist
+	echo "done"
+
+clean: clean-libs clean-apps_obj clean-apps_bin clean-nox clean-floodlight
 
 clean-nox:
 	@rm -rf $(RFC_DIR)/build
@@ -73,6 +78,9 @@ clean-nox:
 	@rm -f $(RFC_DIR)/configure.ac
 	@rm -f $(RFC_DIR)/configure
 	@rm -f $(RFC_DIR)/Makefile.in
+
+clean-floodlight:
+	@ant -f floodlight/build.xml clean
 
 clean-libs:
 	@rm -rf $(BUILD_LIB_DIR)
@@ -86,4 +94,4 @@ clean-apps_obj:
 clean-apps_bin:
 	@rm -rf $(BUILD_DIR)
 
-.PHONY:all lib app nox clean clean-nox clean-libs clean-apps_obj clean-apps_bin
+.PHONY:all lib app nox floodlight clean clean-nox clean-libs clean-apps_obj clean-apps_bin
