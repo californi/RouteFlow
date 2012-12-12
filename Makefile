@@ -66,6 +66,7 @@ nox: lib
 floodlight: 
 	echo "Building Floodlight with rfproxy..."
 	ant -f floodlight/build.xml dist
+	cp floodlight/logback.xml floodlight/target/logback.xml
 	echo "done"
 
 clean: clean-libs clean-apps_obj clean-apps_bin clean-nox clean-floodlight
