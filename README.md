@@ -20,29 +20,29 @@ Additionally, there are two extra modules: rfweb, an web interface for RouteFlow
 
 # RouteFlow architecture
 ```
-+--------VM---------+
-| Quagga | RFClient |
-+-------------------+
-         \
-M:1      \ RFProtocol
-         \
-+-------------------+
-|     RFServer      |
-+-------------------+
-         \
-1:1      \ RFProtocol
-         \
-+-------------------+
-|      RFProxy      |
-|-------------------|
-|      NOX/POX      |
-+-------------------+
-         \
-1:N      \ OpenFlow Protocol
-         \
-+-------------------+
-|  OpenFlow Switch  |
-+-------------------+
++--------VM-------------+
+|   Quagga | RFClient   |
++-----------------------+
+           \
+M:1        \ RFProtocol
+           \
++-----------------------+
+|       RFServer        |
++-----------------------+
+           \
+1:1        \ RFProtocol
+           \
++-----------------------+
+|        RFProxy        |
+|-----------------------|
+|   NOX/POX/Floodlight  |
++-----------------------+
+           \
+1:N        \ OpenFlow Protocol
+           \
++-----------------------+
+|    OpenFlow Switch    |
++-----------------------+
 ```
 
 # Building
@@ -136,6 +136,7 @@ $ sudo pip install pymongo
 
 ## Flodlight
 These instrucitons are only necessary if you want to run RouteFlow using Floodlight. The version of the Floodlight controller runs only with Ubuntu 10.04 (Natty) or higher.
+
 1. Install the dependencies:
 ```
 sudo apt-get install build-essential default-jdk ant python-dev
@@ -233,6 +234,7 @@ For more details on this test, see its [explanation](http://sites.google.com/sit
 This test should be run with a [Mininet](http://yuba.stanford.edu/foswiki/bin/view/OpenFlow/Mininet) simulated network.
 
 1. Run:
+
 ```
 $ sudo ./rftest2 --pox
 ```
