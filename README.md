@@ -139,7 +139,7 @@ These instrucitons are only necessary if you want to run RouteFlow using Floodli
 
 1. Install the dependencies:
 ```
-sudo apt-get install build-essential default-jdk ant python-dev
+$ sudo apt-get install build-essential default-jdk ant python-dev
 ```
 
 Floodlight will be compiled with the RouteFlow distribution in the steps ahead.
