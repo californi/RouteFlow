@@ -56,6 +56,7 @@ import net.floodlightcontroller.rfproxy.RFProtocol.java.RFProtocol.VirtualPlaneM
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/* Main Class. */
 public class RFProxy implements IOFMessageListener, IFloodlightModule,
 		IOFSwitchListener, defs {
 
@@ -167,12 +168,14 @@ public class RFProxy implements IOFMessageListener, IFloodlightModule,
 			match.setDataLayerSource(src_hwaddress);
 		}
 
-		// Foco de erros
+		/* It is not working. */
+		/* All rules with IP Destination or IP Source does not work. */
 		match.setNetworkDestination(IPv4.toIPv4Address(address));
 
-		// Default Priority
+		/* Default Priority. */
 		flowMod.setPriority((short) 0x8000);
 
+		/* Set command. */
 		flowMod.setCommand(OFFlowMod.OFPFC_DELETE_STRICT);
 
 		/* Get switch by DPID */
@@ -206,18 +209,23 @@ public class RFProxy implements IOFMessageListener, IFloodlightModule,
 			match.setDataLayerSource(src_hwaddress);
 		}
 
-		// Foco de erros////////////////////////
+		/* It is not working. */
+		/* All rules with IP Destination or IP Source does not work. */
 		match.setNetworkDestination(IPv4.toIPv4Address(address));
-		// Default Priority
+		
+		/* Default Priority. */
 		flowMod.setPriority((short) 0x8000);
-		// //////////////////////////////////////
 
+		/* Set command. */
 		flowMod.setCommand(OFFlowMod.OFPFC_ADD);
 
+		/* Set timeout. */
 		flowMod.setIdleTimeout((short) 60);
 
+		/* Set out port. */
 		flowMod.setOutPort(OFPort.OFPP_NONE);
 
+		/* List of actions. */
 		flowMod.setActions(Arrays.asList((OFAction) new OFActionOutput(
 				(short) 0, (short) 0xffff)));
 
@@ -259,19 +267,23 @@ public class RFProxy implements IOFMessageListener, IFloodlightModule,
 			match.setDataLayerSource(src_hwaddress);
 		}
 
-		// Foco de erros
+		/* It is not working. */
+		/* All rules with IP Destination or IP Source does not work. */
 		match.setNetworkDestination(IPv4.toIPv4Address(address));
 
-		// Default Priority
+		/* Default Priority. */
 		flowMod.setPriority((short) 0x8000);
 
+		/* Set command. */
 		flowMod.setCommand(OFFlowMod.OFPFC_ADD);
 
-		// Foco de erros, conversao das mascaras
+		/* Set timeout. */
 		flowMod.setHardTimeout((short) 0); /* Infinite */
 
+		/* Set out port. */
 		flowMod.setOutPort(OFPort.OFPP_NONE);
 
+		/* List of actions. */
 		flowMod.setActions(Arrays.asList(new OFAction[] {
 				new OFActionDataLayerSource(Ethernet
 						.toMACAddress(src_hwaddress)),
@@ -347,7 +359,6 @@ public class RFProxy implements IOFMessageListener, IFloodlightModule,
 		public RFProtocolProcessor(IPCMessageService ipc) {
 			this.ipc = ipc;
 			logger = LoggerFactory.getLogger(RFProtocolProcessor.class);
-			// logger.info("RFProxy Processor Interno Ativado!");
 		}
 
 		@Override
@@ -403,7 +414,7 @@ public class RFProxy implements IOFMessageListener, IFloodlightModule,
 	}
 
 	/*******************************************************************/
-	/** Funcoes necessarias apenas por causa da interface implementada */
+	/** Functions needed only for the interface                        */
 	/*******************************************************************/
 	@Override
 	public String getName() {
@@ -441,7 +452,7 @@ public class RFProxy implements IOFMessageListener, IFloodlightModule,
 	/*******************************************************************/
 	/*******************************************************************/
 
-	/* System Initialization */
+	/* System Initialization. */
 	@Override
 	public void init(FloodlightModuleContext context)
 			throws FloodlightModuleException {
@@ -451,7 +462,7 @@ public class RFProxy implements IOFMessageListener, IFloodlightModule,
 
 	}
 
-	/* Tratamento das mensagens de entrada */
+	/* Function to process Packet In Messages.*/
 	private Command processPacketInMessage(IOFSwitch sw, OFPacketIn pi,
 			FloodlightContext cntx) {
 		OFMatch match = new OFMatch();
