@@ -3,7 +3,7 @@ This version of RouteFlow is a beta developers' release intended to evaluate Rou
 
 You can learn more about RouteFlow in our [main page in GitHub](http://cpqd.github.com/RouteFlow/) and in our [website](https://sites.google.com/site/routeflow/).
 
-Please be aware of NOX, POX, OpenFlow, Open vSwitch, Quagga, MongoDB, jQuery, JIT and RouteFlow licenses and terms.
+Please be aware of NOX, POX, Floodlight, OpenFlow, Open vSwitch, Quagga, MongoDB, jQuery, JIT and RouteFlow licenses and terms.
 
 # Distribution overview
 RouteFlow is a distribution composed by three basic applications: RFClient, RFServer and RFProxy.
@@ -12,7 +12,7 @@ RouteFlow is a distribution composed by three basic applications: RFClient, RFSe
 
 * RFServer is a standalone application that manages the VMs running the RFClient daemons. The RFServer keeps the mapping between the RFClient VM instances and interfaces and the corresponding switches and ports. It connects to RFProxy to instruct it about when to configure flows and also to configure the Open vSwitch to maintain the connectivity in the virtual environment formed by the set of VMs.
 
-* RFProxy is an application (for NOX and POX) responsible for the interactions with the OpenFlow switches (identified by datapaths) via the OpenFlow protocol. It listens to instructions from the RFServer and notifies it about events in the network. We recommend running POX when you are experimenting and testing your network. You can also use NOX though if you need or want (for production maybe).
+* RFProxy is an application (for NOX, POX and Floodlight) responsible for the interactions with the OpenFlow switches (identified by datapaths) via the OpenFlow protocol. It listens to instructions from the RFServer and notifies it about events in the network. We recommend running POX when you are experimenting and testing your network. You can also use NOX though if you need or want (for production maybe).
 
 There is also a library of common functions (rflib). It has implementations of the IPC, utilities like custom types for IP and MAC addresses manipulation and OpenFlow message creation.
 
@@ -134,6 +134,15 @@ $ sudo scons --full install --prefix=/usr --sharedclient
 $ sudo pip install pymongo
 ```
 
+## Flodlight
+These instrucitons are only necessary if you want to run RouteFlow using Floodlight. The version of the Floodlight controller runs only with Ubuntu 10.04 (Natty) or higher.
+1. Install the dependencies:
+```
+sudo apt-get install build-essential default-jdk ant python-dev
+```
+
+Floodlight will be compiled with the RouteFlow distribution in the steps ahead.
+
 ## NOX
 These instructions are only necessary if you want to run RouteFlow using NOX. The version of the NOX controller we are using does not compile under newer versions of Ubuntu (11.10, 12.04). You can use POX, which doesn't require compiling.
 
@@ -226,6 +235,11 @@ This test should be run with a [Mininet](http://yuba.stanford.edu/foswiki/bin/vi
 1. Run:
 ```
 $ sudo ./rftest2 --pox
+```
+
+Or:
+```
+$ sudo ./rftest2 --floodlight
 ```
 
 2. Once you have a Mininet VM up and running, copy the network topology files in rftest to the VM:
