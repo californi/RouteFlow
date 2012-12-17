@@ -56,5 +56,8 @@ public interface defs {
 	public static final int PC_MAP = 0;
 	
 	public static final int PC_RESET = 1;
+	
+	/* Default Priority */
+	public static final short DEFAULT_PRIORITY = (short) 0x8000;
 
 }

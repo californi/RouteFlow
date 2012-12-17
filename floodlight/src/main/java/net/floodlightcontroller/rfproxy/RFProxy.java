@@ -93,24 +93,24 @@ public class RFProxy implements IOFMessageListener, IFloodlightModule,
 		OFMatch match = new OFMatch();
 
 		if (operation_id == defs.DC_RIPV2) {
-			match.setDataLayerType((short) 0x0800);
-			match.setNetworkProtocol((byte) 0x11);
+			match.setDataLayerType(Ethernet.TYPE_IPv4);
+			match.setNetworkProtocol(IPv4.PROTOCOL_UDP);
 			match.setNetworkDestination(IPv4.toIPv4Address("224.0.0.9"));
 		} else if (operation_id == defs.DC_OSPF) {
-			match.setDataLayerType((short) 0x0800);
+			match.setDataLayerType(Ethernet.TYPE_IPv4);
 			match.setNetworkProtocol((byte) 0x59);
 		} else if (operation_id == defs.DC_ARP) {
 			match.setDataLayerType((short) 0x0806);
 		} else if (operation_id == defs.DC_ICMP) {
-			match.setDataLayerType((short) 0x0800);
-			match.setNetworkProtocol((byte) 0x01);
+			match.setDataLayerType(Ethernet.TYPE_IPv4);
+			match.setNetworkProtocol(IPv4.PROTOCOL_ICMP);
 		} else if (operation_id == defs.DC_BGP_INBOUND) {
-			match.setDataLayerType((short) 0x0800);
-			match.setNetworkProtocol((byte) 0x06);
+			match.setDataLayerType(Ethernet.TYPE_IPv4);
+			match.setNetworkProtocol(IPv4.PROTOCOL_TCP);
 			match.setTransportDestination((short) 0x00B3);
 		} else if (operation_id == defs.DC_BGP_OUTBOUND) {
-			match.setDataLayerType((short) 0x0800);
-			match.setNetworkProtocol((byte) 0x06);
+			match.setDataLayerType(Ethernet.TYPE_IPv4);
+			match.setNetworkProtocol(IPv4.PROTOCOL_TCP);
 			match.setTransportSource((short) 0);
 		} else if (operation_id == defs.DC_VM_INFO) {
 			match.setDataLayerType((short) defs.RF_ETH_PROTO);
@@ -127,13 +127,13 @@ public class RFProxy implements IOFMessageListener, IFloodlightModule,
 			flowMod.setHardTimeout((short) 0); /* Infinite. */
 			flowMod.setOutPort(OFPort.OFPP_NONE);
 			flowMod.setActions(Arrays.asList((OFAction) new OFActionOutput(
-					OFPort.OFPP_CONTROLLER.getValue(), (short) 0xffff)));
+					OFPort.OFPP_CONTROLLER.getValue(), OFPort.OFPP_NONE.getValue())));
 		}
 
 		/* Get switch by DPID */
 		IOFSwitch sw = floodlightProvider.getSwitches().get(dp_id);
 
-		flowMod.setBufferId(0xffffffff);
+		flowMod.setBufferId(OFPacketOut.BUFFER_ID_NONE);
 
 		/* Send the Flow mod */
 		if (sw != null) {
@@ -162,7 +162,7 @@ public class RFProxy implements IOFMessageListener, IFloodlightModule,
 
 		OFMatch match = new OFMatch();
 
-		match.setDataLayerType((short) 0x0800);
+		match.setDataLayerType(Ethernet.TYPE_IPv4);
 
 		if (defs.MATCH_L2) {
 			match.setDataLayerSource(src_hwaddress);
@@ -173,7 +173,7 @@ public class RFProxy implements IOFMessageListener, IFloodlightModule,
 		match.setNetworkDestination(IPv4.toIPv4Address(address));
 
 		/* Default Priority. */
-		flowMod.setPriority((short) 0x8000);
+		flowMod.setPriority(defs.DEFAULT_PRIORITY);
 
 		/* Set command. */
 		flowMod.setCommand(OFFlowMod.OFPFC_DELETE_STRICT);
@@ -181,7 +181,7 @@ public class RFProxy implements IOFMessageListener, IFloodlightModule,
 		/* Get switch by DPID */
 		IOFSwitch sw = floodlightProvider.getSwitches().get(dp_id);
 
-		flowMod.setBufferId(0xffffffff);
+		flowMod.setBufferId(OFPacketOut.BUFFER_ID_NONE);
 
 		/* Send the Flow mod */
 		if (sw != null) {
@@ -203,7 +203,7 @@ public class RFProxy implements IOFMessageListener, IFloodlightModule,
 		}
 
 		/* Create a temporary flow msg */
-		match.setDataLayerType((short) 0x0800);
+		match.setDataLayerType(Ethernet.TYPE_IPv4);
 
 		if (defs.MATCH_L2) {
 			match.setDataLayerSource(src_hwaddress);
@@ -214,7 +214,7 @@ public class RFProxy implements IOFMessageListener, IFloodlightModule,
 		match.setNetworkDestination(IPv4.toIPv4Address(address));
 		
 		/* Default Priority. */
-		flowMod.setPriority((short) 0x8000);
+		flowMod.setPriority(defs.DEFAULT_PRIORITY);
 
 		/* Set command. */
 		flowMod.setCommand(OFFlowMod.OFPFC_ADD);
@@ -227,7 +227,7 @@ public class RFProxy implements IOFMessageListener, IFloodlightModule,
 
 		/* List of actions. */
 		flowMod.setActions(Arrays.asList((OFAction) new OFActionOutput(
-				(short) 0, (short) 0xffff)));
+				(short) 0, OFPort.OFPP_NONE.getValue())));
 
 		flowMod.setBufferId(OFPacketOut.BUFFER_ID_NONE);
 
@@ -261,7 +261,7 @@ public class RFProxy implements IOFMessageListener, IFloodlightModule,
 
 		OFMatch match = new OFMatch();
 
-		match.setDataLayerType((short) 0x0800);
+		match.setDataLayerType(Ethernet.TYPE_IPv4);
 
 		if (defs.MATCH_L2) {
 			match.setDataLayerSource(src_hwaddress);
@@ -272,7 +272,7 @@ public class RFProxy implements IOFMessageListener, IFloodlightModule,
 		match.setNetworkDestination(IPv4.toIPv4Address(address));
 
 		/* Default Priority. */
-		flowMod.setPriority((short) 0x8000);
+		flowMod.setPriority(defs.DEFAULT_PRIORITY);
 
 		/* Set command. */
 		flowMod.setCommand(OFFlowMod.OFPFC_ADD);
@@ -291,7 +291,7 @@ public class RFProxy implements IOFMessageListener, IFloodlightModule,
 						.toMACAddress(dst_hwaddress)),
 				new OFActionOutput().setPort((short) dst_port) }));
 
-		flowMod.setBufferId(0xffffffff);
+		flowMod.setBufferId(OFPacketOut.BUFFER_ID_NONE);
 
 		/* Get switch by DPID */
 		IOFSwitch sw = floodlightProvider.getSwitches().get(dp_id);
@@ -339,7 +339,7 @@ public class RFProxy implements IOFMessageListener, IFloodlightModule,
 		packetOutMessage.setPacketData(packetData);
 		packetOutLength += (short) packetData.length;
 
-		packetOutMessage.setBufferId(0xffffffff);
+		packetOutMessage.setBufferId(OFPacketOut.BUFFER_ID_NONE);
 		packetOutMessage.setLength(packetOutLength);
 
 		try {
