@@ -59,5 +59,11 @@ public interface defs {
 	
 	/* Default Priority */
 	public static final short DEFAULT_PRIORITY = (short) 0x8000;
+	
+	public static final byte IPPROTO_OSPF = (short) 0x59;
+	
+	public static final short ETHERTYPE_ARP = (short) 0x0806;
+	
+	public static final short IPORT_BGP = (short) 0x00B3;
 
 }

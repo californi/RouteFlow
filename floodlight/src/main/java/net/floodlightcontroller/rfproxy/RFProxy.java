@@ -98,16 +98,16 @@ public class RFProxy implements IOFMessageListener, IFloodlightModule,
 			match.setNetworkDestination(IPv4.toIPv4Address("224.0.0.9"));
 		} else if (operation_id == defs.DC_OSPF) {
 			match.setDataLayerType(Ethernet.TYPE_IPv4);
-			match.setNetworkProtocol((byte) 0x59);
+			match.setNetworkProtocol(defs.IPPROTO_OSPF);
 		} else if (operation_id == defs.DC_ARP) {
-			match.setDataLayerType((short) 0x0806);
+			match.setDataLayerType(defs.ETHERTYPE_ARP);
 		} else if (operation_id == defs.DC_ICMP) {
 			match.setDataLayerType(Ethernet.TYPE_IPv4);
 			match.setNetworkProtocol(IPv4.PROTOCOL_ICMP);
 		} else if (operation_id == defs.DC_BGP_INBOUND) {
 			match.setDataLayerType(Ethernet.TYPE_IPv4);
 			match.setNetworkProtocol(IPv4.PROTOCOL_TCP);
-			match.setTransportDestination((short) 0x00B3);
+			match.setTransportDestination(defs.IPORT_BGP);
 		} else if (operation_id == defs.DC_BGP_OUTBOUND) {
 			match.setDataLayerType(Ethernet.TYPE_IPv4);
 			match.setNetworkProtocol(IPv4.PROTOCOL_TCP);
