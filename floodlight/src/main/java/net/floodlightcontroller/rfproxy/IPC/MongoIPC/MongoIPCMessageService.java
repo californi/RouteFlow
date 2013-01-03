@@ -180,7 +180,7 @@ public class MongoIPCMessageService extends IPCMessageService implements fields 
 
 				}
 
-				Thread.sleep(50);
+				Thread.sleep(500);
 			}
 
 		} catch (Exception e) {
