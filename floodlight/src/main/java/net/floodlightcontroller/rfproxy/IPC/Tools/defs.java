@@ -66,4 +66,6 @@ public interface defs {
 	
 	public static final short IPORT_BGP = (short) 0x00B3;
 
+	public static final short IPORT_BGUP = (short) 0x0000;
+
 }

@@ -111,7 +111,7 @@ public class RFProxy implements IOFMessageListener, IFloodlightModule,
 		} else if (operation_id == defs.DC_BGP_OUTBOUND) {
 			match.setDataLayerType(Ethernet.TYPE_IPv4);
 			match.setNetworkProtocol(IPv4.PROTOCOL_TCP);
-			match.setTransportSource((short) 0);
+			match.setTransportSource(defs.IPORT_BGUP);
 		} else if (operation_id == defs.DC_VM_INFO) {
 			match.setDataLayerType((short) defs.RF_ETH_PROTO);
 		} else if (operation_id == defs.DC_DROP_ALL) {
