@@ -134,7 +134,7 @@ $ sudo scons --full install --prefix=/usr --sharedclient
 $ sudo pip install pymongo
 ```
 
-## Flodlight
+## Floodlight
 These instrucitons are only necessary if you want to run RouteFlow using Floodlight. The version of the Floodlight controller runs only with Ubuntu 10.04 (Natty) or higher.
 
 1. Install the dependencies:
