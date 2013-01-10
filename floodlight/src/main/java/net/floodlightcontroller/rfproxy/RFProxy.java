@@ -88,58 +88,49 @@ public class RFProxy implements IOFMessageListener, IFloodlightModule,
 
 	/* Flow Config Function. */
 	public void flowConfig(Long dp_id, int operation_id) {
-		OFFlowMod flowMod = (OFFlowMod) floodlightProvider.getOFMessageFactory().getMessage(OFType.FLOW_MOD);
+		OFFlowMod flowMod = (OFFlowMod) floodlightProvider
+				.getOFMessageFactory().getMessage(OFType.FLOW_MOD);
 
-        long cookie = AppCookie.makeCookie(123, 0);
-        int length = OFFlowMod.MINIMUM_LENGTH;
-        
-        List<OFAction> actions = new ArrayList<OFAction>();
-        
+		long cookie = AppCookie.makeCookie(123, 0);
+		int length = OFFlowMod.MINIMUM_LENGTH;
+
+		List<OFAction> actions = new ArrayList<OFAction>();
+
 		OFMatch match = new OFMatch();
 		if (operation_id == defs.DC_RIPV2) {
 			match.setDataLayerType(Ethernet.TYPE_IPv4);
 			match.setNetworkProtocol(IPv4.PROTOCOL_UDP);
 			match.setNetworkDestination(IPv4.toIPv4Address("224.0.0.9"));
-	        match.setWildcards(OFMatch.OFPFW_ALL & 
-					~OFMatch.OFPFW_DL_TYPE & 
-					~OFMatch.OFPFW_NW_PROTO &
-					~OFMatch.OFPFW_NW_DST_MASK);
+			match.setWildcards(OFMatch.OFPFW_ALL & ~OFMatch.OFPFW_DL_TYPE
+					& ~OFMatch.OFPFW_NW_PROTO & ~OFMatch.OFPFW_NW_DST_MASK);
 		} else if (operation_id == defs.DC_OSPF) {
 			match.setDataLayerType(Ethernet.TYPE_IPv4);
 			match.setNetworkProtocol(defs.IPPROTO_OSPF);
-	        match.setWildcards(OFMatch.OFPFW_ALL & 
-					~OFMatch.OFPFW_DL_TYPE & 
-					~OFMatch.OFPFW_NW_PROTO);			
+			match.setWildcards(OFMatch.OFPFW_ALL & ~OFMatch.OFPFW_DL_TYPE
+					& ~OFMatch.OFPFW_NW_PROTO);
 		} else if (operation_id == defs.DC_ARP) {
 			match.setDataLayerType(defs.ETHERTYPE_ARP);
-	        match.setWildcards(OFMatch.OFPFW_ALL & 
-					~OFMatch.OFPFW_DL_TYPE);	
+			match.setWildcards(OFMatch.OFPFW_ALL & ~OFMatch.OFPFW_DL_TYPE);
 		} else if (operation_id == defs.DC_ICMP) {
 			match.setDataLayerType(Ethernet.TYPE_IPv4);
 			match.setNetworkProtocol(IPv4.PROTOCOL_ICMP);
-	        match.setWildcards(OFMatch.OFPFW_ALL & 
-					~OFMatch.OFPFW_DL_TYPE & 
-					~OFMatch.OFPFW_NW_PROTO);	
+			match.setWildcards(OFMatch.OFPFW_ALL & ~OFMatch.OFPFW_DL_TYPE
+					& ~OFMatch.OFPFW_NW_PROTO);
 		} else if (operation_id == defs.DC_BGP_INBOUND) {
 			match.setDataLayerType(Ethernet.TYPE_IPv4);
 			match.setNetworkProtocol(IPv4.PROTOCOL_TCP);
 			match.setTransportDestination(defs.IPORT_BGP);
-	        match.setWildcards(OFMatch.OFPFW_ALL & 
-					~OFMatch.OFPFW_DL_TYPE & 
-					~OFMatch.OFPFW_NW_PROTO &
-					~OFMatch.OFPFW_TP_DST);	
+			match.setWildcards(OFMatch.OFPFW_ALL & ~OFMatch.OFPFW_DL_TYPE
+					& ~OFMatch.OFPFW_NW_PROTO & ~OFMatch.OFPFW_TP_DST);
 		} else if (operation_id == defs.DC_BGP_OUTBOUND) {
 			match.setDataLayerType(Ethernet.TYPE_IPv4);
 			match.setNetworkProtocol(IPv4.PROTOCOL_TCP);
 			match.setTransportSource(defs.IPORT_BGP);
-			match.setWildcards(OFMatch.OFPFW_ALL & 
-					~OFMatch.OFPFW_DL_TYPE & 
-					~OFMatch.OFPFW_NW_PROTO &
-					~OFMatch.OFPFW_TP_SRC);	
+			match.setWildcards(OFMatch.OFPFW_ALL & ~OFMatch.OFPFW_DL_TYPE
+					& ~OFMatch.OFPFW_NW_PROTO & ~OFMatch.OFPFW_TP_SRC);
 		} else if (operation_id == defs.DC_VM_INFO) {
 			match.setDataLayerType((short) defs.RF_ETH_PROTO);
-	        match.setWildcards(OFMatch.OFPFW_ALL & 
-					~OFMatch.OFPFW_DL_TYPE);
+			match.setWildcards(OFMatch.OFPFW_ALL & ~OFMatch.OFPFW_DL_TYPE);
 		} else if (operation_id == defs.DC_DROP_ALL) {
 			flowMod.setPriority((short) 1);
 		}
@@ -147,27 +138,24 @@ public class RFProxy implements IOFMessageListener, IFloodlightModule,
 		if (operation_id == defs.DC_CLEAR_FLOW_TABLE) {
 			flowMod.setCommand(OFFlowMod.OFPFC_DELETE);
 			flowMod.setPriority((short) 0);
-		}
-		else if (operation_id == defs.DC_DROP_ALL) {
+		} else if (operation_id == defs.DC_DROP_ALL) {
 			// Do nothing: no match, no actions = drop
 		} else {
-			actions.add(new OFActionOutput(OFPort.OFPP_CONTROLLER.getValue(), OFPort.OFPP_NONE.getValue()));
+			actions.add(new OFActionOutput(OFPort.OFPP_CONTROLLER.getValue(),
+					OFPort.OFPP_NONE.getValue()));
 			length += OFActionOutput.MINIMUM_LENGTH;
-	        flowMod.setCommand(OFFlowMod.OFPFC_ADD);
+			flowMod.setCommand(OFFlowMod.OFPFC_ADD);
 		}
 
-        ((OFFlowMod) flowMod.setIdleTimeout((short) 0)
-        .setHardTimeout((short) 0)
-        .setBufferId(OFPacketOut.BUFFER_ID_NONE)
-        .setCookie(cookie)
-        .setLengthU(length))
-        .setMatch(match)
-        .setActions(actions);
-        
+		((OFFlowMod) flowMod.setIdleTimeout((short) 0)
+				.setHardTimeout((short) 0).setBufferId(
+						OFPacketOut.BUFFER_ID_NONE).setCookie(cookie)
+				.setLengthU(length)).setMatch(match).setActions(actions);
+
 		/* Get switch by DPID */
 		IOFSwitch sw = floodlightProvider.getSwitches().get(dp_id);
 		/* Send the Flow mod */
-		if (sw != null) {
+		if ((sw != null) && sw.isConnected()) {
 			try {
 				sw.write(flowMod, null);
 				sw.flush();
@@ -175,6 +163,12 @@ public class RFProxy implements IOFMessageListener, IFloodlightModule,
 						"ofp_flow_mod(config) was sent to datapath (dp_id={})",
 						dp_id);
 			} catch (IOException e) {
+				logger
+						.info(
+								"Error sending ofp_flow_mod(config) to datapath (dp_id={})",
+								dp_id);
+				e.printStackTrace();
+			} catch (IndexOutOfBoundsException e) {
 				logger
 						.info(
 								"Error sending ofp_flow_mod(config) to datapath (dp_id={})",
@@ -197,11 +191,15 @@ public class RFProxy implements IOFMessageListener, IFloodlightModule,
 
 		if (defs.MATCH_L2) {
 			match.setDataLayerSource(src_hwaddress);
+			match.setWildcards(OFMatch.OFPFW_ALL & ~OFMatch.OFPFW_DL_SRC);
 		}
 
 		/* It is not working. */
 		/* All rules with IP Destination or IP Source does not work. */
 		match.setNetworkDestination(IPv4.toIPv4Address(address));
+
+		match.setWildcards(OFMatch.OFPFW_ALL & ~OFMatch.OFPFW_DL_TYPE
+				& ~OFMatch.OFPFW_NW_DST_MASK);
 
 		/* Default Priority. */
 		flowMod.setPriority(defs.DEFAULT_PRIORITY);
@@ -215,12 +213,13 @@ public class RFProxy implements IOFMessageListener, IFloodlightModule,
 		flowMod.setBufferId(OFPacketOut.BUFFER_ID_NONE);
 
 		/* Send the Flow mod */
-		if (sw != null) {
+		if ((sw != null) && sw.isConnected()) {
 
 			flowMod.setMatch(match);
 
 			try {
 				sw.write(flowMod, null);
+				sw.flush();
 				logger.info(
 						"ofp_flow_mod(delete) was sent to datapath (dp_id={})",
 						dp_id);
@@ -230,52 +229,10 @@ public class RFProxy implements IOFMessageListener, IFloodlightModule,
 								"Error sending ofp_flow_mod(delete) to datapath (dp_id={})",
 								dp_id);
 				e.printStackTrace();
-			}
-		}
-
-		/* Create a temporary flow msg */
-		match.setDataLayerType(Ethernet.TYPE_IPv4);
-
-		if (defs.MATCH_L2) {
-			match.setDataLayerSource(src_hwaddress);
-		}
-
-		/* It is not working. */
-		/* All rules with IP Destination or IP Source does not work. */
-		match.setNetworkDestination(IPv4.toIPv4Address(address));
-		
-		/* Default Priority. */
-		flowMod.setPriority(defs.DEFAULT_PRIORITY);
-
-		/* Set command. */
-		flowMod.setCommand(OFFlowMod.OFPFC_ADD);
-
-		/* Set timeout. */
-		flowMod.setIdleTimeout((short) 60);
-
-		/* Set out port. */
-		flowMod.setOutPort(OFPort.OFPP_NONE);
-
-		/* List of actions. */
-		flowMod.setActions(Arrays.asList((OFAction) new OFActionOutput(
-				(short) 0, OFPort.OFPP_NONE.getValue())));
-
-		flowMod.setBufferId(OFPacketOut.BUFFER_ID_NONE);
-
-		/* Send the Flow mod */
-		if (sw != null) {
-
-			flowMod.setMatch(match);
-
-			try {
-				sw.write(flowMod, null);
-				logger.info(
-						"ofp_flow_mod(delete) was sent to datapath (dp_id={})",
-						dp_id);
-			} catch (IOException e) {
+			} catch (IndexOutOfBoundsException e) {
 				logger
 						.info(
-								"Error sending ofp_flow_mod(delete) to datapath (dp_id={})",
+								"Error sending ofp_flow_mod(config) to datapath (dp_id={})",
 								dp_id);
 				e.printStackTrace();
 			}
@@ -290,53 +247,65 @@ public class RFProxy implements IOFMessageListener, IFloodlightModule,
 		OFFlowMod flowMod = (OFFlowMod) floodlightProvider
 				.getOFMessageFactory().getMessage(OFType.FLOW_MOD);
 
-        int length = OFFlowMod.MINIMUM_LENGTH;
-        
+		int length = OFFlowMod.MINIMUM_LENGTH;
+
 		OFMatch match = new OFMatch();
 		match.setDataLayerType(Ethernet.TYPE_IPv4);
 
 		if (defs.MATCH_L2) {
 			match.setDataLayerSource(src_hwaddress);
+			match.setWildcards(OFMatch.OFPFW_ALL & ~OFMatch.OFPFW_DL_SRC);
 		}
 
 		/* It is not working. */
 		/* All rules with IP Destination or IP Source does not work. */
 		match.setNetworkDestination(IPv4.toIPv4Address(address));
-        match.setWildcards(OFMatch.OFPFW_ALL & 
-				~OFMatch.OFPFW_DL_TYPE & 
-				~OFMatch.OFPFW_NW_DST_MASK);
-        
-        long cookie = AppCookie.makeCookie(123, 0);
-        
-        List<OFAction> actions = new ArrayList<OFAction>();
-        actions.add(new OFActionDataLayerSource(Ethernet.toMACAddress(src_hwaddress)));
-        length += OFActionDataLayerSource.MINIMUM_LENGTH;
-        actions.add(new OFActionDataLayerDestination(Ethernet.toMACAddress(dst_hwaddress)));
-        length += OFActionDataLayerDestination.MINIMUM_LENGTH;
-        actions.add(new OFActionOutput().setPort((short) dst_port));
-        length += OFActionOutput.MINIMUM_LENGTH;
-		
-        ((OFFlowMod) flowMod.setIdleTimeout((short) 0)
-        .setHardTimeout((short) 0)
-        .setBufferId(OFPacketOut.BUFFER_ID_NONE)
-        .setCookie(cookie)
-        .setCommand(OFFlowMod.OFPFC_ADD)
-        .setMatch(match)
-        .setActions(actions)
-        .setLengthU(length))
-        .setOutPort((short) dst_port);
-       
+		match.setWildcards(OFMatch.OFPFW_ALL & ~OFMatch.OFPFW_DL_TYPE
+				& ~OFMatch.OFPFW_NW_DST_MASK);
+
+		long cookie = AppCookie.makeCookie(123, 0);
+
+		List<OFAction> actions = new ArrayList<OFAction>();
+		actions.add(new OFActionDataLayerSource(Ethernet
+				.toMACAddress(src_hwaddress)));
+		length += OFActionDataLayerSource.MINIMUM_LENGTH;
+		actions.add(new OFActionDataLayerDestination(Ethernet
+				.toMACAddress(dst_hwaddress)));
+		length += OFActionDataLayerDestination.MINIMUM_LENGTH;
+		actions.add(new OFActionOutput().setPort((short) dst_port));
+		length += OFActionOutput.MINIMUM_LENGTH;
+
+		((OFFlowMod) flowMod.setIdleTimeout((short) 0)
+				.setHardTimeout((short) 0).setBufferId(
+						OFPacketOut.BUFFER_ID_NONE).setCookie(cookie)
+				.setCommand(OFFlowMod.OFPFC_ADD).setMatch(match).setActions(
+						actions).setLengthU(length))
+				.setOutPort((short) dst_port);
+
+		flowMod.setMatch(match);
+
 		/* Get switch by DPID */
 		IOFSwitch sw = floodlightProvider.getSwitches().get(dp_id);
 
 		/* Send the Flow mod */
-		if (sw != null) {
+		if ((sw != null) && sw.isConnected()) {
 			try {
 				sw.write(flowMod, null);
 				sw.flush();
-				logger.info("ofp_flow_mod(add) was sent to datapath (dp_id={})", dp_id);
+				logger.info(
+						"ofp_flow_mod(add) was sent to datapath (dp_id={})",
+						dp_id);
 			} catch (IOException e) {
-				logger.info("Error sending ofp_flow_mod(add) to datapath (dp_id={})", dp_id);
+				logger
+						.info(
+								"Error sending ofp_flow_mod(add) to datapath (dp_id={})",
+								dp_id);
+				e.printStackTrace();
+			} catch (IndexOutOfBoundsException e) {
+				logger
+						.info(
+								"Error sending ofp_flow_mod(add) to datapath (dp_id={})",
+								dp_id);
 				e.printStackTrace();
 			}
 		}
@@ -373,6 +342,9 @@ public class RFProxy implements IOFMessageListener, IFloodlightModule,
 		} catch (IOException e) {
 			logger.error("Failed to write {} to switch {}: {}", new Object[] {
 					packetOutMessage, sw, e });
+		} catch (IndexOutOfBoundsException e) {
+			logger.info("Error On Packet Send");
+			e.printStackTrace();
 		}
 	}
 
@@ -440,7 +412,7 @@ public class RFProxy implements IOFMessageListener, IFloodlightModule,
 	}
 
 	/*******************************************************************/
-	/** Functions needed only for the interface                        */
+	/** Functions needed only for the interface */
 	/*******************************************************************/
 	@Override
 	public String getName() {
@@ -488,7 +460,7 @@ public class RFProxy implements IOFMessageListener, IFloodlightModule,
 
 	}
 
-	/* Function to process Packet In Messages.*/
+	/* Function to process Packet In Messages. */
 	private Command processPacketInMessage(IOFSwitch sw, OFPacketIn pi,
 			FloodlightContext cntx) {
 		OFMatch match = new OFMatch();
@@ -682,4 +654,3 @@ public class RFProxy implements IOFMessageListener, IFloodlightModule,
 	}
 
 }
-
