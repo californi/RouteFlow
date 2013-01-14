@@ -385,7 +385,7 @@ public class RFProxy implements IOFMessageListener, IFloodlightModule,
 
 					flowAdd(messageFlowMod.get_dp_id(), messageFlowMod
 							.get_address(), messageFlowMod.get_netmask(),
-							messageFlowMod.get_dst_hwaddress(), messageFlowMod
+							messageFlowMod.get_src_hwaddress(), messageFlowMod
 									.get_dst_hwaddress(), messageFlowMod
 									.get_dst_port());
 				}
