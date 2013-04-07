@@ -9,7 +9,7 @@ import rflib.ipc.IPC as IPC
 import rflib.ipc.MongoIPC as MongoIPC
 from rflib.ipc.RFProtocol import *
 from rflib.openflow.rfofmsg import *
-from rflib.ipc.rfprotocolfactory import RFProtocolFactory
+from rflib.ipc.RFProtocolFactory import RFProtocolFactory
 from rflib.defs import *
 
 FAILURE = 0
@@ -50,7 +50,7 @@ class Table:
             id_, port = self.vs_to_dp[key]
             if id_ == dp_id:
                 del self.vs_to_dp[key]
-                    
+
     # We're not considering the case of this table becoming invalid when a
     # datapath goes down. When the datapath comes back, the server recreates
     # the association, forcing new map messages to be generated, overriding the
@@ -59,12 +59,15 @@ class Table:
     # to the wrong places. We have to fix this.
 
 netmask_prefix = lambda a: sum([bin(int(x)).count("1") for x in a.split(".", 4)])
-ipc = MongoIPC.MongoIPCMessageService(MONGO_ADDRESS, MONGO_DB_NAME, RFPROXY_ID)
+
+# TODO: add proper support for ID
+ID = 0
+ipc = MongoIPC.MongoIPCMessageService(MONGO_ADDRESS, MONGO_DB_NAME, str(ID))
 table = Table()
 
 # Logging
 log = core.getLogger("rfproxy")
-                
+
 # Base methods
 def send_of_msg(dp_id, ofmsg):
     topology = core.components['topology']
@@ -107,9 +110,9 @@ def flow_config(dp_id, operation_id):
 def flow_add(dp_id, address, netmask, src_hwaddress, dst_hwaddress, dst_port):
     netmask = netmask_prefix(netmask)
     address = address + "/" + str(netmask)
-                
-    ofmsg = create_flow_install_msg(address, netmask, 
-                                    src_hwaddress, dst_hwaddress, 
+
+    ofmsg = create_flow_install_msg(address, netmask,
+                                    src_hwaddress, dst_hwaddress,
                                     dst_port)
     if send_of_msg(dp_id, ofmsg) == SUCCESS:
         log.info("ofp_flow_mod(add) was sent to datapath (dp_id=%s)",
@@ -121,7 +124,7 @@ def flow_add(dp_id, address, netmask, src_hwaddress, dst_hwaddress, dst_port):
 def flow_delete(dp_id, address, netmask, src_hwaddress):
     netmask = netmask_prefix(netmask)
     address = address + "/" + str(netmask)
-                
+
     ofmsg1 = create_flow_remove_msg(address, netmask, src_hwaddress)
     if send_of_msg(dp_id, ofmsg1) == SUCCESS:
         log.info("ofp_flow_mod(delete) was sent to datapath (dp_id=%s)",
@@ -137,54 +140,54 @@ def flow_delete(dp_id, address, netmask, src_hwaddress):
     else:
         log.info("Error sending ofp_flow_mod(delete) to datapath (dp_id=%s)",
                  format_id(dp_id))
-                 
+
 # Event handlers
 def on_datapath_up(event):
     topology = core.components['topology']
     dp_id = event.dpid
-    
+
     ports = topology.getEntityByID(dp_id).ports
     for port in ports:
         if port <= OFPP_MAX:
-            msg = DatapathPortRegister(dp_id=dp_id, dp_port=port)
+            msg = DatapathPortRegister(ct_id=ID, dp_id=dp_id, dp_port=port)
             ipc.send(RFSERVER_RFPROXY_CHANNEL, RFSERVER_ID, msg)
-            
+
             log.info("Registering datapath port (dp_id=%s, dp_port=%d)",
                      format_id(dp_id), port)
-                      
+
 def on_datapath_down(event):
     dp_id = event.dpid
-    
+
     log.info("Datapath is down (dp_id=%s)", format_id(dp_id))
-    
+
     table.delete_dp(dp_id)
-    
-    msg = DatapathDown(dp_id=dp_id)
+
+    msg = DatapathDown(ct_id=ID, dp_id=dp_id)
     ipc.send(RFSERVER_RFPROXY_CHANNEL, RFSERVER_ID, msg)
 
 def on_packet_in(event):
     packet = event.parsed
     dp_id = event.dpid
     in_port = event.port
-    
+
     # Drop all LLDP packets
     if packet.type == ethernet.LLDP_TYPE:
         return
-        
+
     # If we have a mapping packet, inform RFServer through a Map message
     if packet.type == RF_ETH_PROTO:
         vm_id, vm_port = struct.unpack("QB", packet.raw[14:])
 
         log.info("Received mapping packet (vm_id=%s, vm_port=%d, vs_id=%s, vs_port=%d)",
                  format_id(vm_id), vm_port, event.dpid, event.port)
-        
+
         msg = VirtualPlaneMap(vm_id=vm_id, vm_port=vm_port,
                               vs_id=event.dpid, vs_port=event.port)
         ipc.send(RFSERVER_RFPROXY_CHANNEL, RFSERVER_ID, msg)
         return
 
     # If the packet came from RFVS, redirect it to the right switch port
-    if event.dpid == RFVS_DPID:
+    if is_rfvs(event.dpid):
         dp_port = table.vs_port_to_dp_port(dp_id, in_port)
         if dp_port is not None:
             dp_id, dp_port = dp_port
@@ -211,17 +214,27 @@ class RFProcessor(IPC.IPCMessageProcessor):
             flow_config(msg.get_dp_id(), msg.get_operation_id())
         elif type_ == FLOW_MOD:
             if (msg.get_is_removal()):
-                flow_delete(msg.get_dp_id(), 
-                            msg.get_address(), msg.get_netmask(), 
+                flow_delete(msg.get_dp_id(),
+                            msg.get_address(), msg.get_netmask(),
                             msg.get_src_hwaddress())
             else:
-                flow_add(msg.get_dp_id(), 
-                         msg.get_address(), msg.get_netmask(), 
-                         msg.get_src_hwaddress(), msg.get_dst_hwaddress(), 
+                flow_add(msg.get_dp_id(),
+                         msg.get_address(), msg.get_netmask(),
+                         msg.get_src_hwaddress(), msg.get_dst_hwaddress(),
                          msg.get_dst_port())
-                         
+        elif type_ == ROUTE_MOD:
+            try:
+                ofmsg = create_flow_mod(msg)
+            except Warning as e:
+                log.info("Error creating FlowMod: {}" % str(e))
+            if send_of_msg(msg.get_id(), ofmsg) == SUCCESS:
+                log.info("routemod sent to datapath (dp_id=%s)",
+                         format_id(msg.get_id()))
+            else:
+                log.info("Error sending routemod to datapath (dp_id=%s)",
+                         format_id(msg.get_id()))
         if type_ == DATA_PLANE_MAP:
-            table.update_dp_port(msg.get_dp_id(), msg.get_dp_port(), 
+            table.update_dp_port(msg.get_dp_id(), msg.get_dp_port(),
                                  msg.get_vs_id(), msg.get_vs_port())
 
         return True

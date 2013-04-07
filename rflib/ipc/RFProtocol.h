@@ -7,6 +7,9 @@
 #include "IPAddress.h"
 #include "MACAddress.h"
 #include "converter.h"
+#include "Action.hh"
+#include "Match.hh"
+#include "Option.hh"
 
 enum {
 	PORT_REGISTER,
@@ -17,7 +20,8 @@ enum {
 	DATAPATH_PORT_REGISTER,
 	DATAPATH_DOWN,
 	VIRTUAL_PLANE_MAP,
-	DATA_PLANE_MAP
+	DATA_PLANE_MAP,
+	ROUTE_MOD
 };
 
 class PortRegister : public IPCMessage {
@@ -69,7 +73,10 @@ class PortConfig : public IPCMessage {
 class DatapathConfig : public IPCMessage {
     public:
         DatapathConfig();
-        DatapathConfig(uint64_t dp_id, uint32_t operation_id);
+        DatapathConfig(uint64_t ct_id, uint64_t dp_id, uint32_t operation_id);
+
+        uint64_t get_ct_id();
+        void set_ct_id(uint64_t ct_id);
 
         uint64_t get_dp_id();
         void set_dp_id(uint64_t dp_id);
@@ -83,6 +90,7 @@ class DatapathConfig : public IPCMessage {
         virtual string str();
 
     private:
+        uint64_t ct_id;
         uint64_t dp_id;
         uint32_t operation_id;
 };
@@ -135,7 +143,10 @@ class RouteInfo : public IPCMessage {
 class FlowMod : public IPCMessage {
     public:
         FlowMod();
-        FlowMod(uint64_t dp_id, IPAddress address, IPAddress netmask, uint32_t dst_port, MACAddress src_hwaddress, MACAddress dst_hwaddress, bool is_removal);
+        FlowMod(uint64_t ct_id, uint64_t dp_id, IPAddress address, IPAddress netmask, uint32_t dst_port, MACAddress src_hwaddress, MACAddress dst_hwaddress, bool is_removal);
+
+        uint64_t get_ct_id();
+        void set_ct_id(uint64_t ct_id);
 
         uint64_t get_dp_id();
         void set_dp_id(uint64_t dp_id);
@@ -164,6 +175,7 @@ class FlowMod : public IPCMessage {
         virtual string str();
 
     private:
+        uint64_t ct_id;
         uint64_t dp_id;
         IPAddress address;
         IPAddress netmask;
@@ -176,7 +188,10 @@ class FlowMod : public IPCMessage {
 class DatapathPortRegister : public IPCMessage {
     public:
         DatapathPortRegister();
-        DatapathPortRegister(uint64_t dp_id, uint32_t dp_port);
+        DatapathPortRegister(uint64_t ct_id, uint64_t dp_id, uint32_t dp_port);
+
+        uint64_t get_ct_id();
+        void set_ct_id(uint64_t ct_id);
 
         uint64_t get_dp_id();
         void set_dp_id(uint64_t dp_id);
@@ -190,6 +205,7 @@ class DatapathPortRegister : public IPCMessage {
         virtual string str();
 
     private:
+        uint64_t ct_id;
         uint64_t dp_id;
         uint32_t dp_port;
 };
@@ -197,7 +213,10 @@ class DatapathPortRegister : public IPCMessage {
 class DatapathDown : public IPCMessage {
     public:
         DatapathDown();
-        DatapathDown(uint64_t dp_id);
+        DatapathDown(uint64_t ct_id, uint64_t dp_id);
+
+        uint64_t get_ct_id();
+        void set_ct_id(uint64_t ct_id);
 
         uint64_t get_dp_id();
         void set_dp_id(uint64_t dp_id);
@@ -208,6 +227,7 @@ class DatapathDown : public IPCMessage {
         virtual string str();
 
     private:
+        uint64_t ct_id;
         uint64_t dp_id;
 };
 
@@ -243,7 +263,10 @@ class VirtualPlaneMap : public IPCMessage {
 class DataPlaneMap : public IPCMessage {
     public:
         DataPlaneMap();
-        DataPlaneMap(uint64_t dp_id, uint32_t dp_port, uint64_t vs_id, uint32_t vs_port);
+        DataPlaneMap(uint64_t ct_id, uint64_t dp_id, uint32_t dp_port, uint64_t vs_id, uint32_t vs_port);
+
+        uint64_t get_ct_id();
+        void set_ct_id(uint64_t ct_id);
 
         uint64_t get_dp_id();
         void set_dp_id(uint64_t dp_id);
@@ -263,10 +286,47 @@ class DataPlaneMap : public IPCMessage {
         virtual string str();
 
     private:
+        uint64_t ct_id;
         uint64_t dp_id;
         uint32_t dp_port;
         uint64_t vs_id;
         uint32_t vs_port;
+};
+
+class RouteMod : public IPCMessage {
+    public:
+        RouteMod();
+        RouteMod(uint8_t mod, uint64_t id, std::vector<Match> matches, std::vector<Action> actions, std::vector<Option> options);
+
+        uint8_t get_mod();
+        void set_mod(uint8_t mod);
+
+        uint64_t get_id();
+        void set_id(uint64_t id);
+
+        std::vector<Match> get_matches();
+        void set_matches(std::vector<Match> matches);
+        void add_match(const Match& match);
+
+        std::vector<Action> get_actions();
+        void set_actions(std::vector<Action> actions);
+        void add_action(const Action& action);
+
+        std::vector<Option> get_options();
+        void set_options(std::vector<Option> options);
+        void add_option(const Option& option);
+
+        virtual int get_type();
+        virtual void from_BSON(const char* data);
+        virtual const char* to_BSON();
+        virtual string str();
+
+    private:
+        uint8_t mod;
+        uint64_t id;
+        std::vector<Match> matches;
+        std::vector<Action> actions;
+        std::vector<Option> options;
 };
 
 #endif /* __RFPROTOCOL_H__ */
