@@ -3,11 +3,7 @@ This version of RouteFlow is a beta developers' release intended to evaluate Rou
 
 You can learn more about RouteFlow in our [main page in GitHub](http://cpqd.github.com/RouteFlow/) and in our [website](https://sites.google.com/site/routeflow/).
 
-<<<<<<< HEAD
-Please be aware of NOX, POX, Floodlight, OpenFlow, Open vSwitch, Quagga, MongoDB, jQuery, JIT and RouteFlow licenses and terms.
-=======
 Please be aware of POX, OpenFlow, Open vSwitch, Quagga, MongoDB, jQuery, JIT and RouteFlow licenses and terms.
->>>>>>> upstream/master
 
 # Distribution overview
 RouteFlow is a distribution composed by three basic applications: RFClient, RFServer and RFProxy.
@@ -16,42 +12,13 @@ RouteFlow is a distribution composed by three basic applications: RFClient, RFSe
 
 * RFServer is a standalone application that manages the VMs running the RFClient daemons. The RFServer keeps the mapping between the RFClient VM instances and interfaces and the corresponding switches and ports. It connects to RFProxy to instruct it about when to configure flows and also to configure the Open vSwitch to maintain the connectivity in the virtual environment formed by the set of VMs.
 
-<<<<<<< HEAD
-* RFProxy is an application (for NOX, POX and Floodlight) responsible for the interactions with the OpenFlow switches (identified by datapaths) via the OpenFlow protocol. It listens to instructions from the RFServer and notifies it about events in the network. We recommend running POX when you are experimenting and testing your network. You can also use NOX though if you need or want (for production maybe).
-=======
 * RFProxy is an application (for POX and other controllers) responsible for the interactions with the OpenFlow switches (identified by datapaths) via the OpenFlow protocol. It listens to instructions from the RFServer and notifies it about events in the network. We recommend running POX when you are experimenting and testing your network. Other implementations in different controllers will be available soon.
->>>>>>> upstream/master
 
 There is also a library of common functions (rflib). It has implementations of the IPC, utilities like custom types for IP and MAC addresses manipulation and OpenFlow message creation.
 
 Additionally, there's `rfweb`, an extra module that provides an web interface for RouteFlow.
 
 ```
-<<<<<<< HEAD
-+--------VM-------------+
-|   Quagga | RFClient   |
-+-----------------------+
-           \
-M:1        \ RFProtocol
-           \
-+-----------------------+
-|       RFServer        |
-+-----------------------+
-           \
-1:1        \ RFProtocol
-           \
-+-----------------------+
-|        RFProxy        |
-|-----------------------|
-|   NOX/POX/Floodlight  |
-+-----------------------+
-           \
-1:N        \ OpenFlow Protocol
-           \
-+-----------------------+
-|    OpenFlow Switch    |
-+-----------------------+
-=======
 The RouteFlow Architecture
 
 +--------VM---------+
@@ -77,7 +44,6 @@ M:1      \ RFProtocol
 +-------------------+
 |  OpenFlow Switch  |
 +-------------------+
->>>>>>> upstream/master
 ```
 
 # Building
@@ -92,64 +58,7 @@ sudo apt-get install build-essential git libboost-dev \
   mongodb python-pymongo
 ```
 
-<<<<<<< HEAD
-3. There's a conflict with a constant name in NOX and MongoDB. It has been fixed, but is not part of version 2.0.5 yet. So, we need to fix it applying the changes listed in this [commit](https://github.com/mongodb/mongo/commit/a1e68969d48bbb47c893870f6428048a602faf90).
-
-4. Then compile and install MongoDB:
-```
-$ scons all
-$ sudo scons --full install --prefix=/usr --sharedclient
-$ sudo pip install pymongo
-```
-
-## Floodlight
-These instrucitons are only necessary if you want to run RouteFlow using Floodlight. The version of the Floodlight controller runs only with Ubuntu 10.04 (Natty) or higher.
-
-1. Install the dependencies:
-
-```
-$ sudo apt-get install build-essential default-jdk ant python-dev
-```
-
-Floodlight will be compiled with the RouteFlow distribution in the steps ahead.
-
-## NOX
-These instructions are only necessary if you want to run RouteFlow using NOX. The version of the NOX controller we are using does not compile under newer versions of Ubuntu (11.10, 12.04). You can use POX, which doesn't require compiling.
-
-1. Install the dependencies:
-```
-$ sudo apt-get install autoconf automake g++ libtool swig make git-core \
-  libboost-dev libboost-test-dev libboost-filesystem-dev libssl-dev \
-  libpcap-dev python-twisted python-simplejson python-dev
-```
-
-2. TwistedPython, one of the dependencies of the NOX controller bundled with the RouteFlow distribution, got an update that made it stop working. To get around this issue, edit the following file:
-```
-$ sudo vi /usr/lib/python2.6/dist-packages/twisted/internet/base.py
-```
-Insert the method `_handleSigchld` at the end of the file, at the same level as the `mainLoop` method (be diligent, this is Python code), just before the last statement (the one that reads `__all__ = []`):
-```python
-        def _handleSigchld(self, signum, frame, _threadSupport=platform.supportsThreads()):
-            from twisted.internet.process import reapAllProcesses
-            if _threadSupport:
-                self.callFromThread(reapAllProcesses)
-            else:
-                self.callLater(0, reapAllProcesses)
-```
-Save the file and you're ready to go.
-
-NOX will be compiled with the RouteFlow distribution in the steps ahead.
-
-## RouteFlow
-1. Install the dependencies:
-```
-$ sudo apt-get install build-essential iproute-dev swig1.3
-```
-
-2. Checkout the RouteFlow distribution:
-=======
 2. Clone RouteFlow's repository on GitHub:
->>>>>>> upstream/master
 ```
 $ git clone git://github.com/CPqD/RouteFlow.git
 ```
@@ -201,14 +110,8 @@ For more details on this test, see its [explanation](https://github.com/CPqD/Rou
 This test should be run with a [Mininet](http://yuba.stanford.edu/foswiki/bin/view/OpenFlow/Mininet) simulated network.
 
 1. Run:
-
 ```
 $ sudo ./rftest2 --pox
-```
-
-Or:
-```
-$ sudo ./rftest2 --floodlight
 ```
 
 2. Once you have a Mininet VM up and running, copy the network topology files in rftest to the VM:
